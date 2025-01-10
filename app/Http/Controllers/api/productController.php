@@ -1,55 +1,87 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class productController extends Controller
 {
     public function index()
     {
-        $productos = Product::all(); 
-        //$productos = Producto::orderBy("id", "desc")->paginate();
-        return response()->json($productos);
+        $products=Product::all();
+
+        // if($products->isEmpty()){
+        //     $data = [
+        //         "message" => "There are no products",
+        //         "error" => true,
+        //     ];
+
+        //     return response()->json($data, 200);
+        // }
+
+        $data = [
+            "status" => 200,
+            "products" => $products,
+        ];
+
+        
+        return response()->json($data, 200);
+
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
-        $request -> validate([
-            'nombre' => 'required',
-            'precio' => 'required',
-            'stock' => 'required',
+        // $request->validate([
+        //     'name' =>'required|string',
+        //     'price' =>'required|numeric',
+        //     'stock' =>'required|numeric',
+        // ]);
+
+        // $product = Product::create($request->all());
+
+        // $data = [
+        //     "status" => 201,
+        //     "product" => $product,
+        // ];
+
+        // return response()->json($data, 201);
+
+        $validator = Validator::make($request->all(), [
+            'name' =>'required|string',
+            'price' =>'required|numeric',
+            'stock' =>'required|numeric',
         ]);
 
-        $producto = Product::create($request->all());
-        return response()->json($producto);
-    }
+        if ($validator->fails()) {
+            $data = [
+                "message" => "Error",
+                "errors" => $validator->errors(),
+                "status" => 400
+            ];
+        };
 
-    public function show($id)
-    {
-        $producto = Product::find($id);
-        return response()->json($producto);
-    }
+        $product = Product::create($request->all([
+            "name" => $request->name,
+            "price" => $request->price,
+            "stock" => $request->stock,
+        ]));
 
-    public function update(Request $request, $id)
-    {
-        $request -> validate([
-            'nombre' => 'required|string',
-            'precio' => 'required|numeric',
-            'stock' => 'required|numeric',
-        ]);
+        if(!$product){
 
-        $producto = Product::find($id);
-        $producto->update($request->all());
-        return response()->json($producto);
-    }
+            $data = [
+                "message" => "Error creating product",
+                "status" => 500
+            ];
+            return response()->json($data, 500);
+        };
 
-    public function destroy($id)
-    {
-        $producto = Product::find($id);
-        $producto->delete();
-        return response()->json(null, 204);
+        $data = [
+            "status" => 201,
+            "product" => $product,
+        ];
+        return response()->json($data, 201);
     }
 }

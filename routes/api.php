@@ -1,15 +1,21 @@
 <?php
 
-use App\Http\Controllers\api\productController;
+use App\Http\Controllers\Api\productController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::controller(productController::class)->group(function(){
-    Route::get('products', 'index'); ;
-    Route::post('products', 'create');
+Route::get("products", [productController::class, "index"]);
+Route::post("products", [productController::class, "store"]);
 
-    Route::get('products/{id}', 'show');
-    Route::put('products/{id}', 'update');
-    Route::delete('products/{id}', 'destroy');
+Route::get("products/{id}", function(){
+    return "Get a Product";
+});
+
+Route::put("products/{id}", function(){
+    return "Update a Product";
+});
+
+Route::delete("products/{id}", function(){
+    return "Delete a Product";
 });
 
